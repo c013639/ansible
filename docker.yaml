@@ -1,0 +1,31 @@
+---
+- hosts: build_host
+  gather_facts: no
+  tasks:
+    - name: build pdi-core-ee container image
+      docker_image:
+        name: pdi-core-ee:v1.0
+        build:
+          path: kubespray-2.20.0/files/dockerfiles/Dockerfile-pdi-core-ee
+          source: build
+          args:
+            UID: "{{UID}}"
+        state: present
+    - name: Modify existing image tag with Temporary Tag
+      docker_image:
+        name: pdi-core-ee:7.1.2
+        repository: pdi-core-ee:latest
+        force_tag: true
+        source: local
+    - name: Modify Newly Created image with Original Image Tag
+      docker_image:
+        name: pdi-core-ee:7.1.2
+        repository: pdi-core-ee:latest
+        force_tag: true
+        source: local
+    - name: push to local registry
+      docker_image:
+        name: centos
+        repository: localhost:5000/centos
+        push: true
+        source: local             
